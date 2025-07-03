@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Entrer votre code</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body style="display: none;">
+  <script>
+    const joueur = JSON.parse(localStorage.getItem("joueur"));
+    if (!joueur || !joueur.nom || !joueur.prenom) {
+      alert("Connexion requise");
+      window.location.href = "index.html";
+    } else {
+      document.body.style.display = "block";
+    }
+  </script>
+  <div class="container">
+    <h1>Entrer votre code</h1>
+    <input type="text" id="code" placeholder="Votre code">
+    <button onclick="verifierCode()">Valider</button>
+    <div class="loader hidden" id="loader"></div>
+  </div>
+</body>
+</html>

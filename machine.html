@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Machine à sous</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body style="display: none;">
+  <script>
+    const joueur = JSON.parse(localStorage.getItem("joueur"));
+    if (!joueur || !joueur.nom || !joueur.prenom || !joueur.codeValide) {
+      alert("Accès refusé : vous allez être redirigé.");
+      window.location.href = "index.html";
+    } else {
+      document.body.style.display = "block";
+    }
+  </script>
+
+  <div class="container">
+    <h1>Machine à sous</h1>
+    <div id="slots" style="font-size: 2rem; margin-bottom: 20px;">🍒 🍋 🔔</div>
+    <button id="machineButton" onclick="jouerMachine()">Jouer</button>
+    <div id="result" style="margin-top:20px;"></div>
+  </div>
+</body>
+</html>

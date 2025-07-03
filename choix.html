@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Choix des jeux</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body style="display: none;">
+  <script>
+    const joueur = JSON.parse(localStorage.getItem("joueur"));
+    if (!joueur || !joueur.nom || !joueur.prenom || !joueur.codeValide) {
+      alert("Accès refusé");
+      window.location.href = "index.html";
+    } else {
+      document.body.style.display = "block";
+    }
+  </script>
+  <div class="container">
+    <h1>Choisissez votre jeu</h1>
+    <button onclick="showLoader(() => window.location.href='roulette.html')">🎡 Roulette</button>
+    <button onclick="showLoader(() => window.location.href='machine.html')">🎰 Machine à sous</button>
+    <div class="loader hidden" id="loader"></div>
+  </div>
+</body>
+</html>

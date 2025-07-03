@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Roulette</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body style="display: none;">
+  <script>
+    const joueur = JSON.parse(localStorage.getItem("joueur"));
+    if (!joueur || !joueur.nom || !joueur.prenom || !joueur.codeValide) {
+      alert("Accès refusé : vous allez être redirigé.");
+      window.location.href = "index.html";
+    } else {
+      document.body.style.display = "block";
+    }
+  </script>
+
+  <div class="container">
+    <h1>Roulette</h1>
+
+    <input type="number" id="choixNumero" placeholder="Numéro 0-36" min="0" max="36" style="margin-bottom:10px;">
+    <select id="choixCouleur" style="margin-bottom:10px;">
+      <option value="">--Choisir une couleur--</option>
+      <option value="Rouge">Rouge</option>
+      <option value="Noir">Noir</option>
+      <option value="Vert">Vert</option>
+    </select>
+
+    <p style="color: #ffd700;">🎁 Le Vert ou le Nombre/Chiffre choisi compte DOUBLE !</p>
+
+    <canvas id="rouletteCanvas" width="300" height="300" style="background:#222; border-radius:50%; margin: 20px 0;"></canvas>
+
+    <button id="rouletteButton" onclick="jouerRoulette()">Lancer la roulette</button>
+
+    <div id="result" style="margin-top:20px;"></div>
+  </div>
+</body>
+</html>
