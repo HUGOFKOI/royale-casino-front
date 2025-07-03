@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Royale Casino</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Panneau d'administration</h1>
+    <input type="password" id="adminPass" placeholder="Mot de passe admin">
+    <button onclick="adminLogin()">Se connecter</button>
+
+    <div id="adminPanel" class="hidden">
+      <h2>Codes</h2>
+      <button onclick="genererCode()">Générer un code</button>
+      <div id="codesList" style="margin-top:10px;"></div>
+
+      <h2>Gagnants</h2>
+      <div id="gagnantsList" style="margin-top:10px;"></div>
+      <button onclick="clearGagnants()">Effacer la liste des gagnants</button>
+    </div>
+  </div>
+</body>
+</html>
