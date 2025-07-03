@@ -43,7 +43,6 @@ function verifierCode() {
         alert("❌ Code invalide ou déjà utilisé");
         return;
       }
-      // Passe à la suite sans message inutile
       let joueur = JSON.parse(localStorage.getItem("joueur"));
       joueur.codeValide = true;
       localStorage.setItem("joueur", JSON.stringify(joueur));
@@ -57,25 +56,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const joueur = JSON.parse(localStorage.getItem("joueur"));
   const page = location.pathname.split("/").pop();
 
-  if (page === "code.html") {
-    if (!joueur || !joueur.nom || !joueur.prenom) {
-      alert("Connexion requise");
-      window.location.href = "index.html";
-    }
+  if (page === "code.html" && (!joueur || !joueur.nom || !joueur.prenom)) {
+    alert("Connexion requise");
+    window.location.href = "index.html";
   }
 
-  if (["choix.html"].includes(page)) {
-    if (!joueur || !joueur.codeValide) {
-      alert("Accès refusé");
-      window.location.href = "index.html";
-    }
+  if (page === "choix.html" && (!joueur || !joueur.codeValide)) {
+    alert("Accès refusé");
+    window.location.href = "index.html";
   }
 
-  if (["roulette.html", "machine.html"].includes(page)) {
-    if (!joueur || !joueur.codeValide || joueur.aJoue) {
-      alert("Accès refusé");
-      window.location.href = "index.html";
-    }
+  if (["roulette.html", "machine.html"].includes(page) && (!joueur || !joueur.codeValide || joueur.aJoue)) {
+    alert("Accès refusé");
+    window.location.href = "index.html";
   }
 });
 
@@ -119,7 +112,7 @@ function jouerMachine() {
   let current = 0;
 
   function spin() {
-    slots = slots.map(() => symbols[Math.floor(Math.random() * symbols.length)]);
+    slots = slots.map(() => symbols[Math.floor(Math.random() * symbols.length)]); 
     document.getElementById("slots").innerHTML = slots.join(' ');
     current++;
     if (current < steps) {
@@ -249,6 +242,22 @@ function adminLogin() {
       }
     })
     .catch(() => alert("Erreur serveur"));
+}
+
+function genererCode() {
+  fetch(`${SERVER_URL}/api/admin/generate-code`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      loadCodes();
+    } else {
+      alert("Erreur lors de la génération du code");
+    }
+  })
+  .catch(() => alert("Erreur serveur lors de la génération du code"));
 }
 
 function loadCodes() {
