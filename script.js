@@ -1,13 +1,12 @@
-// 🔒 Bloque retour arrière renforcé
+// 🔒 Bloque retour arrière renforcé et empêche retour spam
 (function() {
   history.pushState(null, null, location.href);
-  window.onpopstate = () => {
+  window.addEventListener("popstate", () => {
     history.pushState(null, null, location.href);
     alert("Vous ne pouvez pas revenir en arrière !");
-  };
+  });
 })();
 
-// 🌐 Adresse de ton serveur Render
 const SERVER_URL = "https://royale-casino-server.onrender.com";
 
 // Loader
@@ -51,7 +50,7 @@ function verifierCode() {
     .catch(() => alert("Erreur serveur"));
 }
 
-// Sécurité : bloque accès manuel aux pages
+// Sécurité accès manuel
 document.addEventListener("DOMContentLoaded", () => {
   const joueur = JSON.parse(localStorage.getItem("joueur"));
   const page = location.pathname.split("/").pop();
@@ -66,7 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "index.html";
   }
 
-  if (["roulette.html", "machine.html"].includes(page) && (!joueur || !joueur.codeValide || joueur.aJoue)) {
+  if (["roulette.html", "machine.html"].includes(page) &&
+      (!joueur || !joueur.codeValide || joueur.aJoue)) {
     alert("Accès refusé");
     window.location.href = "index.html";
   }
@@ -83,7 +83,7 @@ function checkSiDejaJoue() {
   return false;
 }
 
-// Enregistrer un gagnant
+// Enregistre gagnant
 function enregistrerGagnant(gain, gagne) {
   const joueur = JSON.parse(localStorage.getItem("joueur"));
   if (gagne) {
@@ -97,7 +97,7 @@ function enregistrerGagnant(gain, gagne) {
   localStorage.setItem("joueur", JSON.stringify(joueur));
 }
 
-// Machine à sous
+// Machine à sous avec probabilité
 function jouerMachine() {
   if (checkSiDejaJoue()) return;
   if (window.enCoursMachine) return;
@@ -106,30 +106,23 @@ function jouerMachine() {
   const bouton = document.getElementById("machineButton");
   if (bouton) bouton.disabled = true;
 
-  const symbols = ['🍒', '🍋', '🔔', '💎', '7️⃣'];
-  let slots = ['', '', ''];
-  let steps = 20;
-  let current = 0;
-
-  function spin() {
-    slots = slots.map(() => symbols[Math.floor(Math.random() * symbols.length)]); 
-    document.getElementById("slots").innerHTML = slots.join(' ');
-    current++;
-    if (current < steps) {
-      setTimeout(spin, 100);
-    } else {
-      const gagne = (slots[0] === slots[1] && slots[1] === slots[2]);
-      const gain = gagne ? 50000 : Math.floor(Math.random() * 50000);
+  fetch(`${SERVER_URL}/api/admin/prob`)
+    .then(res => res.json())
+    .then(data => {
+      const prob = data.probMachine || 10; // % victoire
+      const gagne = Math.random() * 100 < prob;
+      const gain = gagne ? 50000 : Math.floor(Math.random() * 5000);
       document.getElementById("result").innerHTML = `🎯 Gain : ${gain} €`;
       enregistrerGagnant(gain, gagne);
       window.enCoursMachine = false;
-    }
-  }
-
-  spin();
+    })
+    .catch(() => {
+      alert("Erreur serveur probabilité");
+      window.enCoursMachine = false;
+    });
 }
 
-// Roulette
+// Roulette avec probabilité
 function jouerRoulette() {
   if (checkSiDejaJoue()) return;
   if (window.enCoursRoulette) return;
@@ -138,89 +131,25 @@ function jouerRoulette() {
   const bouton = document.getElementById("rouletteButton");
   if (bouton) bouton.disabled = true;
 
-  const choixNumero = document.getElementById("choixNumero")?.value.trim();
-  const choixCouleur = document.getElementById("choixCouleur")?.value;
-  const numChoisi = choixNumero ? parseInt(choixNumero) : null;
+  const choixNumero = parseInt(document.getElementById("choixNumero").value);
+  const choixCouleur = document.getElementById("choixCouleur").value;
 
-  if (numChoisi !== null && (isNaN(numChoisi) || numChoisi < 0 || numChoisi > 36)) {
-    alert("Numéro invalide (0-36)");
-    if (bouton) bouton.disabled = false;
-    window.enCoursRoulette = false;
-    return;
-  }
+  fetch(`${SERVER_URL}/api/admin/prob`)
+    .then(res => res.json())
+    .then(data => {
+      const prob = data.probRoulette || 10; // % victoire
+      const gagne = Math.random() * 100 < prob;
+      const gain = gagne ? 50000 : Math.floor(Math.random() * 5000);
 
-  const canvas = document.getElementById("rouletteCanvas");
-  const ctx = canvas.getContext("2d");
-  const numbers = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
-  const colors = {0: 'green'};
-  numbers.forEach(n => {
-    if (n !== 0) colors[n] = n % 2 === 0 ? 'black' : 'red';
-  });
-
-  let rotation = 0;
-  const totalRotation = Math.PI * 10 + Math.random() * Math.PI * 4;
-  let start = null;
-
-  function draw(rot) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    const radius = cx;
-    const anglePer = (2 * Math.PI) / numbers.length;
-
-    for (let i = 0; i < numbers.length; i++) {
-      const startAngle = i * anglePer + rot;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, radius, startAngle, startAngle + anglePer);
-      ctx.fillStyle = colors[numbers[i]];
-      ctx.fill();
-      ctx.strokeStyle = "#fff";
-      ctx.stroke();
-
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(startAngle + anglePer / 2);
-      ctx.fillStyle = "#fff";
-      ctx.font = "12px Arial";
-      ctx.textAlign = "right";
-      ctx.fillText(numbers[i], radius - 10, 0);
-      ctx.restore();
-    }
-  }
-
-  function animate(timestamp) {
-    if (!start) start = timestamp;
-    const elapsed = timestamp - start;
-    const duration = 4000;
-    const progress = Math.min(elapsed / duration, 1);
-    rotation = totalRotation * progress;
-
-    draw(rotation);
-
-    if (progress < 1) {
-      requestAnimationFrame(animate);
-    } else {
-      draw(totalRotation);
-      const finalAngle = totalRotation % (2 * Math.PI);
-      const sectorAngle = (2 * Math.PI) / numbers.length;
-      const index = Math.floor((numbers.length - (finalAngle / sectorAngle)) % numbers.length);
-      const winNumber = numbers[index];
-      const winColor = winNumber === 0 ? "Vert" : (colors[winNumber] === "red" ? "Rouge" : "Noir");
-
-      let gagne = false;
-      if ((numChoisi !== null && numChoisi === winNumber) || (choixCouleur && choixCouleur === winColor)) {
-        gagne = true;
-      }
-
-      document.getElementById("result").innerHTML = `🎯 Résultat : ${winNumber} (${winColor})<br>${gagne ? "🎉 Gagné !" : "😢 Perdu !"}`;
-      const gain = Math.floor(Math.random() * 50000) + 1;
+      // Tu peux ajouter la vraie logique de roulette + affichage
+      document.getElementById("result").innerHTML = `${gagne ? "🎉 Gagné !" : "😢 Perdu !"} Gain : ${gain} €`;
       enregistrerGagnant(gain, gagne);
       window.enCoursRoulette = false;
-    }
-  }
-
-  requestAnimationFrame(animate);
+    })
+    .catch(() => {
+      alert("Erreur serveur probabilité");
+      window.enCoursRoulette = false;
+    });
 }
 
 // ADMIN
@@ -244,20 +173,37 @@ function adminLogin() {
     .catch(() => alert("Erreur serveur"));
 }
 
+function saveProbabilites() {
+  const probMachine = parseInt(document.getElementById("probMachine").value);
+  const probRoulette = parseInt(document.getElementById("probRoulette").value);
+  if (isNaN(probMachine) || isNaN(probRoulette)) {
+    alert("Entrez des valeurs valides !");
+    return;
+  }
+  fetch(`${SERVER_URL}/api/admin/save-prob`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ probMachine, probRoulette })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) alert("Probabilités mises à jour !");
+    else alert("Erreur lors de l'enregistrement");
+  })
+  .catch(() => alert("Erreur serveur"));
+}
+
 function genererCode() {
   fetch(`${SERVER_URL}/api/admin/generate-code`, {
     method: "POST",
     headers: { "Content-Type": "application/json" }
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      loadCodes();
-    } else {
-      alert("Erreur lors de la génération du code");
-    }
-  })
-  .catch(() => alert("Erreur serveur lors de la génération du code"));
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) loadCodes();
+      else alert("Erreur génération code");
+    })
+    .catch(() => alert("Erreur serveur génération code"));
 }
 
 function loadCodes() {

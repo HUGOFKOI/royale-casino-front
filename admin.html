@@ -9,38 +9,29 @@
 <body>
   <div class="container">
     <h1>Panneau d'administration</h1>
-
     <input type="password" id="adminPass" placeholder="Mot de passe admin">
     <button onclick="adminLogin()">Se connecter</button>
 
     <div id="adminPanel" class="hidden">
       <h2>Codes</h2>
-      <button id="generateCodeBtn">Générer un code</button>
+      <button onclick="genererCode()">Générer un code</button>
       <div id="codesList" style="margin-top:10px;"></div>
 
       <h2>Gagnants</h2>
       <div id="gagnantsList" style="margin-top:10px;"></div>
-      <button id="clearGagnantsBtn">Effacer la liste des gagnants</button>
+      <button onclick="clearGagnants()">Effacer la liste des gagnants</button>
+
+      <h2>Réglage des probabilités</h2>
+      <label>Machine à sous : % victoire
+        <input type="number" id="probMachine" min="0" max="100" value="10"> %
+      </label>
+      <br>
+      <label>Roulette : % victoire
+        <input type="number" id="probRoulette" min="0" max="100" value="10"> %
+      </label>
+      <br>
+      <button onclick="saveProbabilites()">Enregistrer les probabilités</button>
     </div>
   </div>
-
-  <script>
-    // Bind les boutons pour éviter les erreurs si le HTML change
-    document.addEventListener("DOMContentLoaded", () => {
-      const genBtn = document.getElementById("generateCodeBtn");
-      if (genBtn) {
-        genBtn.addEventListener("click", genererCode);
-      }
-
-      const clearBtn = document.getElementById("clearGagnantsBtn");
-      if (clearBtn) {
-        clearBtn.addEventListener("click", () => {
-          if (confirm("Voulez-vous vraiment effacer la liste des gagnants ?")) {
-            clearGagnants();
-          }
-        });
-      }
-    });
-  </script>
 </body>
 </html>
