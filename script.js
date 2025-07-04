@@ -109,9 +109,9 @@ function jouerMachine() {
   fetch(`${SERVER_URL}/api/admin/prob`)
     .then(res => res.json())
     .then(data => {
-      const prob = data.probMachine || 10; // % victoire
+      const prob = data.probMachine || 10;
       const gagne = Math.random() * 100 < prob;
-      const gain = gagne ? 50000 : Math.floor(Math.random() * 5000);
+      const gain = gagne ? data.gainMachine || 50000 : Math.floor(Math.random() * 5000);
       document.getElementById("result").innerHTML = `🎯 Gain : ${gain} €`;
       enregistrerGagnant(gain, gagne);
       window.enCoursMachine = false;
@@ -137,11 +137,10 @@ function jouerRoulette() {
   fetch(`${SERVER_URL}/api/admin/prob`)
     .then(res => res.json())
     .then(data => {
-      const prob = data.probRoulette || 10; // % victoire
+      const prob = data.probRoulette || 10;
       const gagne = Math.random() * 100 < prob;
-      const gain = gagne ? 50000 : Math.floor(Math.random() * 5000);
+      const gain = gagne ? data.gainRoulette || 50000 : Math.floor(Math.random() * 5000);
 
-      // Tu peux ajouter la vraie logique de roulette + affichage
       document.getElementById("result").innerHTML = `${gagne ? "🎉 Gagné !" : "😢 Perdu !"} Gain : ${gain} €`;
       enregistrerGagnant(gain, gagne);
       window.enCoursRoulette = false;
@@ -176,18 +175,20 @@ function adminLogin() {
 function saveProbabilites() {
   const probMachine = parseInt(document.getElementById("probMachine").value);
   const probRoulette = parseInt(document.getElementById("probRoulette").value);
-  if (isNaN(probMachine) || isNaN(probRoulette)) {
+  const gainMachine = parseInt(document.getElementById("gainMachine").value);
+  const gainRoulette = parseInt(document.getElementById("gainRoulette").value);
+  if (isNaN(probMachine) || isNaN(probRoulette) || isNaN(gainMachine) || isNaN(gainRoulette)) {
     alert("Entrez des valeurs valides !");
     return;
   }
   fetch(`${SERVER_URL}/api/admin/save-prob`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ probMachine, probRoulette })
+    body: JSON.stringify({ probMachine, probRoulette, gainMachine, gainRoulette })
   })
   .then(res => res.json())
   .then(data => {
-    if (data.success) alert("Probabilités mises à jour !");
+    if (data.success) alert("Probabilités et gains mis à jour !");
     else alert("Erreur lors de l'enregistrement");
   })
   .catch(() => alert("Erreur serveur"));
