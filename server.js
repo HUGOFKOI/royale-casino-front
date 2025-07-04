@@ -5,21 +5,24 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Sécurité CORS (tu peux remplacer * par ton domaine front pour restreindre)
 app.use(cors({
-  origin: "*" // Tu peux remplacer par ton domaine front si tu veux : ex "https://TON_FRONT.neocities.org"
+  origin: "*"
 }));
 app.use(bodyParser.json());
 
+// Données en mémoire (à remplacer par une BDD si tu veux persister)
 const ADMIN_PASSWORD = "LECASINOMEILLEURTAHLESFOURPFRANCE";
-let codes = [];
-let gagnants = [];
-
+let codes = []; // { code, used }
+let gagnants = []; // { nom, prenom, gain }
 let probConfig = {
-  probMachine: 10,
-  probRoulette: 10,
-  gainMachine: 50000,
-  gainRoulette: 50000
+  probMachine: 10,     // % victoire machine
+  probRoulette: 10,    // % victoire roulette
+  gainMachine: 50000,  // gain max machine
+  gainRoulette: 50000  // gain max roulette
 };
+
+// === ROUTES ADMIN ===
 
 // Connexion admin
 app.post("/api/admin/login", (req, res) => {
@@ -38,7 +41,7 @@ app.post("/api/admin/generate-code", (req, res) => {
   res.json({ success: true, code });
 });
 
-// Liste des codes
+// Lister les codes
 app.get("/api/admin/codes", (req, res) => {
   res.json(codes);
 });
@@ -50,12 +53,12 @@ app.post("/api/admin/delete-code", (req, res) => {
   res.json({ success: true });
 });
 
-// Liste des gagnants
+// Lister les gagnants
 app.get("/api/admin/gagnants", (req, res) => {
   res.json(gagnants);
 });
 
-// Enregistrer un gagnant (depuis joueur)
+// Ajouter un gagnant
 app.post("/api/player/save-gagnant", (req, res) => {
   const { nom, prenom, gain } = req.body;
   if (nom && prenom && gain >= 0) {
@@ -66,18 +69,18 @@ app.post("/api/player/save-gagnant", (req, res) => {
   }
 });
 
-// Clear gagnants
+// Vider gagnants
 app.post("/api/admin/clear-gagnants", (req, res) => {
   gagnants = [];
   res.json({ success: true });
 });
 
-// Obtenir les probas/gains
+// Obtenir les probabilités / gains
 app.get("/api/admin/prob", (req, res) => {
   res.json(probConfig);
 });
 
-// Sauvegarder les probas/gains
+// Sauver les probabilités / gains
 app.post("/api/admin/save-prob", (req, res) => {
   const { probMachine, probRoulette, gainMachine, gainRoulette } = req.body;
   if (
@@ -93,11 +96,12 @@ app.post("/api/admin/save-prob", (req, res) => {
   }
 });
 
-// Test route
+// === ROUTE TEST SERVEUR ===
 app.get("/", (req, res) => {
   res.send("✅ Serveur Royale Casino actif !");
 });
 
+// Lancer serveur
 app.listen(PORT, () => {
   console.log(`🎲 Serveur lancé sur le port ${PORT}`);
 });
