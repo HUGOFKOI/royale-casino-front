@@ -6,25 +6,22 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: "*" // Remplace par ton domaine front si tu veux sécuriser ex: "https://TON_FRONT"
+  origin: "*" // Tu peux remplacer par ton domaine front si tu veux : ex "https://TON_FRONT.neocities.org"
 }));
 app.use(bodyParser.json());
 
 const ADMIN_PASSWORD = "LECASINOMEILLEURTAHLESFOURPFRANCE";
 let codes = [];
 let gagnants = [];
-let config = {
-  machine: {
-    probas: { win: 0.1 }, // 10% par défaut
-    gains: { win: 50000, loseMin: 0, loseMax: 5000 }
-  },
-  roulette: {
-    probas: { win: 0.1 },
-    gains: { win: 50000, loseMin: 0, loseMax: 5000 }
-  }
+
+let probConfig = {
+  probMachine: 10,
+  probRoulette: 10,
+  gainMachine: 50000,
+  gainRoulette: 50000
 };
 
-// Admin login
+// Connexion admin
 app.post("/api/admin/login", (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
@@ -34,44 +31,34 @@ app.post("/api/admin/login", (req, res) => {
   }
 });
 
-// Set config (probabilités / gains)
-app.post("/api/admin/set-config", (req, res) => {
-  const { machine, roulette } = req.body;
-  if (machine && roulette) {
-    config.machine = machine;
-    config.roulette = roulette;
-    res.json({ success: true, message: "Configuration mise à jour" });
-  } else {
-    res.status(400).json({ success: false, message: "Données incomplètes" });
-  }
-});
-
-// Get config (pour affichage si tu veux plus tard)
-app.get("/api/admin/config", (req, res) => {
-  res.json(config);
-});
-
-// Code routes
+// Générer un code
 app.post("/api/admin/generate-code", (req, res) => {
   const code = Math.random().toString(36).substr(2, 6).toUpperCase();
   codes.push({ code, used: false });
   res.json({ success: true, code });
 });
 
-app.get("/api/admin/codes", (req, res) => res.json(codes));
+// Liste des codes
+app.get("/api/admin/codes", (req, res) => {
+  res.json(codes);
+});
 
+// Supprimer un code
 app.post("/api/admin/delete-code", (req, res) => {
   const { code } = req.body;
   codes = codes.filter(c => c.code !== code);
   res.json({ success: true });
 });
 
-// Gagnants
-app.get("/api/admin/gagnants", (req, res) => res.json(gagnants));
+// Liste des gagnants
+app.get("/api/admin/gagnants", (req, res) => {
+  res.json(gagnants);
+});
 
+// Enregistrer un gagnant (depuis joueur)
 app.post("/api/player/save-gagnant", (req, res) => {
   const { nom, prenom, gain } = req.body;
-  if (nom && prenom) {
+  if (nom && prenom && gain >= 0) {
     gagnants.push({ nom, prenom, gain });
     res.json({ success: true });
   } else {
@@ -79,11 +66,34 @@ app.post("/api/player/save-gagnant", (req, res) => {
   }
 });
 
+// Clear gagnants
 app.post("/api/admin/clear-gagnants", (req, res) => {
   gagnants = [];
   res.json({ success: true });
 });
 
+// Obtenir les probas/gains
+app.get("/api/admin/prob", (req, res) => {
+  res.json(probConfig);
+});
+
+// Sauvegarder les probas/gains
+app.post("/api/admin/save-prob", (req, res) => {
+  const { probMachine, probRoulette, gainMachine, gainRoulette } = req.body;
+  if (
+    probMachine >= 0 && probMachine <= 100 &&
+    probRoulette >= 0 && probRoulette <= 100 &&
+    gainMachine >= 0 &&
+    gainRoulette >= 0
+  ) {
+    probConfig = { probMachine, probRoulette, gainMachine, gainRoulette };
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ success: false, message: "Valeurs invalides" });
+  }
+});
+
+// Test route
 app.get("/", (req, res) => {
   res.send("✅ Serveur Royale Casino actif !");
 });
