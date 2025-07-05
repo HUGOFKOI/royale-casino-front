@@ -5,21 +5,22 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: "*" // Tu peux remplacer par ton domaine si tu veux limiter les requêtes : ex : "https://TON_FRONT_URL"
+}));
 app.use(bodyParser.json());
 
 const ADMIN_PASSWORD = "LECASINOMEILLEURTAHLESFOURPFRANCE";
-
-let codes = []; 
-let gagnants = []; 
+let codes = [];
+let gagnants = [];
 let configProba = {
-  probMachine: 10,
-  probRoulette: 10,
-  gainMachine: 50000,
-  gainRoulette: 50000
+  probMachine: 10, // % de victoire machine
+  probRoulette: 10, // % de victoire roulette
+  gainMachine: 50000, // Gain machine
+  gainRoulette: 50000 // Gain roulette
 };
 
-// Authentification admin
+// Connexion admin
 app.post("/api/admin/login", (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
@@ -36,7 +37,7 @@ app.post("/api/admin/generate-code", (req, res) => {
   res.json({ success: true, code });
 });
 
-// Liste codes
+// Liste des codes
 app.get("/api/admin/codes", (req, res) => {
   res.json(codes);
 });
@@ -48,25 +49,29 @@ app.post("/api/admin/delete-code", (req, res) => {
   res.json({ success: true });
 });
 
-// Liste gagnants
+// Liste des gagnants
 app.get("/api/admin/gagnants", (req, res) => {
   res.json(gagnants);
 });
 
-// Ajouter gagnant
+// Ajouter un gagnant (depuis le jeu)
 app.post("/api/player/save-gagnant", (req, res) => {
   const { nom, prenom, gain } = req.body;
-  gagnants.push({ nom, prenom, gain });
-  res.json({ success: true });
+  if (nom && prenom && typeof gain === "number") {
+    gagnants.push({ nom, prenom, gain });
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ success: false, message: "Données invalides" });
+  }
 });
 
-// Effacer gagnants
+// Effacer tous les gagnants
 app.post("/api/admin/clear-gagnants", (req, res) => {
   gagnants = [];
   res.json({ success: true });
 });
 
-// Sauvegarde proba + gains
+// Sauvegarde des probabilités et gains
 app.post("/api/admin/save-prob", (req, res) => {
   const { probMachine, probRoulette, gainMachine, gainRoulette } = req.body;
   if (
@@ -79,7 +84,7 @@ app.post("/api/admin/save-prob", (req, res) => {
   res.json({ success: true });
 });
 
-// Retour config proba
+// Récupérer les proba/gains
 app.get("/api/admin/prob", (req, res) => {
   res.json(configProba);
 });
@@ -89,6 +94,7 @@ app.get("/", (req, res) => {
   res.send("✅ Serveur Royale Casino actif !");
 });
 
+// Lancer serveur
 app.listen(PORT, () => {
   console.log(`🎲 Serveur lancé sur le port ${PORT}`);
 });
