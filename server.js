@@ -1,4 +1,3 @@
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -6,18 +5,24 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({ origin: "*" }));
+app.use(cors());
 app.use(bodyParser.json());
 
 const ADMIN_PASSWORD = "LECASINOMEILLEURTAHLESFOURPFRANCE";
 let codes = [];
 let gagnants = [];
-let config = { probMachine: 10, gainMachine: 50000, probRoulette: 10, gainRoulette: 50000 };
+let probMachine = 10;
+let probRoulette = 10;
+let gainMachine = 50000;
+let gainRoulette = 50000;
 
 app.post("/api/admin/login", (req, res) => {
   const { password } = req.body;
-  if (password === ADMIN_PASSWORD) res.json({ success: true });
-  else res.status(403).json({ success: false, message: "Mot de passe incorrect" });
+  if (password === ADMIN_PASSWORD) {
+    res.json({ success: true });
+  } else {
+    res.status(403).json({ success: false, message: "Mot de passe incorrect" });
+  }
 });
 
 app.post("/api/admin/generate-code", (req, res) => {
@@ -47,11 +52,16 @@ app.post("/api/admin/clear-gagnants", (req, res) => {
   res.json({ success: true });
 });
 
-app.get("/api/admin/prob", (req, res) => res.json(config));
+app.get("/api/admin/prob", (req, res) => {
+  res.json({ probMachine, probRoulette, gainMachine, gainRoulette });
+});
 
 app.post("/api/admin/save-prob", (req, res) => {
-  const { probMachine, gainMachine, probRoulette, gainRoulette } = req.body;
-  config = { probMachine, gainMachine, probRoulette, gainRoulette };
+  const { probMachine: pM, probRoulette: pR, gainMachine: gM, gainRoulette: gR } = req.body;
+  probMachine = pM;
+  probRoulette = pR;
+  gainMachine = gM;
+  gainRoulette = gR;
   res.json({ success: true });
 });
 
