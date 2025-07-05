@@ -1,4 +1,4 @@
-// 🔒 Bloque retour arrière renforcé et empêche retour spam
+// 🔒 Bloque retour arrière renforcé et anti-spam
 (function() {
   history.pushState(null, null, location.href);
   window.addEventListener("popstate", () => {
@@ -54,17 +54,14 @@ function verifierCode() {
 document.addEventListener("DOMContentLoaded", () => {
   const joueur = JSON.parse(localStorage.getItem("joueur"));
   const page = location.pathname.split("/").pop();
-
   if (page === "code.html" && (!joueur || !joueur.nom || !joueur.prenom)) {
     alert("Connexion requise");
     window.location.href = "index.html";
   }
-
   if (page === "choix.html" && (!joueur || !joueur.codeValide)) {
     alert("Accès refusé");
     window.location.href = "index.html";
   }
-
   if (["roulette.html", "machine.html"].includes(page) &&
       (!joueur || !joueur.codeValide || joueur.aJoue)) {
     alert("Accès refusé");
@@ -72,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Empêche de rejouer
 function checkSiDejaJoue() {
   const joueur = JSON.parse(localStorage.getItem("joueur"));
   if (joueur.aJoue) {
@@ -83,7 +79,6 @@ function checkSiDejaJoue() {
   return false;
 }
 
-// Enregistre gagnant
 function enregistrerGagnant(gain, gagne) {
   const joueur = JSON.parse(localStorage.getItem("joueur"));
   if (gagne) {
@@ -97,58 +92,32 @@ function enregistrerGagnant(gain, gagne) {
   localStorage.setItem("joueur", JSON.stringify(joueur));
 }
 
-// Machine à sous avec probabilité
+// Machine
 function jouerMachine() {
   if (checkSiDejaJoue()) return;
-  if (window.enCoursMachine) return;
-  window.enCoursMachine = true;
-
-  const bouton = document.getElementById("machineButton");
-  if (bouton) bouton.disabled = true;
-
   fetch(`${SERVER_URL}/api/admin/prob`)
     .then(res => res.json())
     .then(data => {
-      const prob = data.probMachine || 10;
-      const gagne = Math.random() * 100 < prob;
-      const gain = gagne ? data.gainMachine || 50000 : Math.floor(Math.random() * 5000);
+      const gagne = Math.random() * 100 < data.probMachine;
+      const gain = gagne ? data.gainMachine : Math.floor(Math.random() * 5000);
       document.getElementById("result").innerHTML = `🎯 Gain : ${gain} €`;
       enregistrerGagnant(gain, gagne);
-      window.enCoursMachine = false;
     })
-    .catch(() => {
-      alert("Erreur serveur probabilité");
-      window.enCoursMachine = false;
-    });
+    .catch(() => alert("Erreur serveur"));
 }
 
-// Roulette avec probabilité
+// Roulette
 function jouerRoulette() {
   if (checkSiDejaJoue()) return;
-  if (window.enCoursRoulette) return;
-  window.enCoursRoulette = true;
-
-  const bouton = document.getElementById("rouletteButton");
-  if (bouton) bouton.disabled = true;
-
-  const choixNumero = parseInt(document.getElementById("choixNumero").value);
-  const choixCouleur = document.getElementById("choixCouleur").value;
-
   fetch(`${SERVER_URL}/api/admin/prob`)
     .then(res => res.json())
     .then(data => {
-      const prob = data.probRoulette || 10;
-      const gagne = Math.random() * 100 < prob;
-      const gain = gagne ? data.gainRoulette || 50000 : Math.floor(Math.random() * 5000);
-
+      const gagne = Math.random() * 100 < data.probRoulette;
+      const gain = gagne ? data.gainRoulette : Math.floor(Math.random() * 5000);
       document.getElementById("result").innerHTML = `${gagne ? "🎉 Gagné !" : "😢 Perdu !"} Gain : ${gain} €`;
       enregistrerGagnant(gain, gagne);
-      window.enCoursRoulette = false;
     })
-    .catch(() => {
-      alert("Erreur serveur probabilité");
-      window.enCoursRoulette = false;
-    });
+    .catch(() => alert("Erreur serveur"));
 }
 
 // ADMIN
@@ -174,31 +143,25 @@ function adminLogin() {
 
 function saveProbabilites() {
   const probMachine = parseInt(document.getElementById("probMachine").value);
-  const gainMachine = parseInt(document.getElementById("gainMachine").value);
   const probRoulette = parseInt(document.getElementById("probRoulette").value);
+  const gainMachine = parseInt(document.getElementById("gainMachine").value);
   const gainRoulette = parseInt(document.getElementById("gainRoulette").value);
-
-  if (
-    isNaN(probMachine) || isNaN(gainMachine) ||
-    isNaN(probRoulette) || isNaN(gainRoulette)
-  ) {
-    alert("Entrez des valeurs valides !");
+  if ([probMachine, probRoulette, gainMachine, gainRoulette].some(isNaN)) {
+    alert("Valeurs invalides");
     return;
   }
-
   fetch(`${SERVER_URL}/api/admin/save-prob`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ probMachine, gainMachine, probRoulette, gainRoulette })
+    body: JSON.stringify({ probMachine, probRoulette, gainMachine, gainRoulette })
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) alert("Probabilités et gains mis à jour !");
-    else alert("Erreur lors de l'enregistrement");
-  })
-  .catch(() => alert("Erreur serveur"));
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) alert("Probas/gains enregistrés !");
+      else alert("Erreur serveur");
+    })
+    .catch(() => alert("Erreur serveur"));
 }
-
 
 function genererCode() {
   fetch(`${SERVER_URL}/api/admin/generate-code`, {
@@ -208,9 +171,7 @@ function genererCode() {
     .then(res => res.json())
     .then(data => {
       if (data.success) loadCodes();
-      else alert("Erreur génération code");
-    })
-    .catch(() => alert("Erreur serveur génération code"));
+    });
 }
 
 function loadCodes() {
