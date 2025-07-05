@@ -174,17 +174,22 @@ function adminLogin() {
 
 function saveProbabilites() {
   const probMachine = parseInt(document.getElementById("probMachine").value);
-  const probRoulette = parseInt(document.getElementById("probRoulette").value);
   const gainMachine = parseInt(document.getElementById("gainMachine").value);
+  const probRoulette = parseInt(document.getElementById("probRoulette").value);
   const gainRoulette = parseInt(document.getElementById("gainRoulette").value);
-  if (isNaN(probMachine) || isNaN(probRoulette) || isNaN(gainMachine) || isNaN(gainRoulette)) {
+
+  if (
+    isNaN(probMachine) || isNaN(gainMachine) ||
+    isNaN(probRoulette) || isNaN(gainRoulette)
+  ) {
     alert("Entrez des valeurs valides !");
     return;
   }
+
   fetch(`${SERVER_URL}/api/admin/save-prob`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ probMachine, probRoulette, gainMachine, gainRoulette })
+    body: JSON.stringify({ probMachine, gainMachine, probRoulette, gainRoulette })
   })
   .then(res => res.json())
   .then(data => {
@@ -193,6 +198,7 @@ function saveProbabilites() {
   })
   .catch(() => alert("Erreur serveur"));
 }
+
 
 function genererCode() {
   fetch(`${SERVER_URL}/api/admin/generate-code`, {
