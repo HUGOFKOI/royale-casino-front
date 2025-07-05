@@ -58,11 +58,20 @@ app.get("/api/admin/prob", (req, res) => {
 
 app.post("/api/admin/save-prob", (req, res) => {
   const { probMachine: pM, probRoulette: pR, gainMachine: gM, gainRoulette: gR } = req.body;
-  probMachine = pM;
-  probRoulette = pR;
-  gainMachine = gM;
-  gainRoulette = gR;
-  res.json({ success: true });
+  if (
+    pM >= 0 && pM <= 100 &&
+    pR >= 0 && pR <= 100 &&
+    gM >= 0 &&
+    gR >= 0
+  ) {
+    probMachine = pM;
+    probRoulette = pR;
+    gainMachine = gM;
+    gainRoulette = gR;
+    res.json({ success: true });
+  } else {
+    res.status(400).json({ success: false, message: "Paramètres invalides" });
+  }
 });
 
 app.get("/", (req, res) => res.send("✅ Serveur Royale Casino actif !"));
