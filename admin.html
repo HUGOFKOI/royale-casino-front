@@ -2,35 +2,41 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Admin - Royale Casino</title>
+  <title>Admin Royale Casino</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
   <div class="container">
     <h1>Panneau d'administration</h1>
+
     <input type="password" id="adminPass" placeholder="Mot de passe admin">
     <button onclick="adminLogin()">Se connecter</button>
 
     <div id="adminPanel" class="hidden">
-      <h2>Codes</h2>
+      <h2>Gestion des codes</h2>
       <button onclick="genererCode()">Générer un code</button>
-      <div id="codesList" style="margin-top:10px;"></div>
+      <div id="codesList" style="margin: 10px 0;"></div>
 
       <h2>Gagnants</h2>
-      <div id="gagnantsList" style="margin-top:10px;"></div>
-      <button onclick="clearGagnants()">Effacer la liste des gagnants</button>
+      <div id="gagnantsList" style="margin: 10px 0;"></div>
+      <button onclick="clearGagnants()">Effacer gagnants</button>
 
-      <h2>Réglage des probabilités</h2>
-      <label>Machine à sous : % victoire
-        <input type="number" id="probMachine" min="0" max="100" value="10"> %
-      </label>
-      <br>
-      <label>Roulette : % victoire
-        <input type="number" id="probRoulette" min="0" max="100" value="10"> %
-      </label>
-      <br>
-      <button onclick="saveProbabilites()">Enregistrer les probabilités</button>
+      <h2>Réglage des probabilités et gains</h2>
+      
+      <label for="probMachine">Probabilité Machine (%)</label>
+      <input type="number" id="probMachine" min="0" max="100" placeholder="ex: 10"><br>
+
+      <label for="gainMachine">Gain Machine (€)</label>
+      <input type="number" id="gainMachine" min="0" placeholder="ex: 50000"><br><br>
+
+      <label for="probRoulette">Probabilité Roulette (%)</label>
+      <input type="number" id="probRoulette" min="0" max="100" placeholder="ex: 10"><br>
+
+      <label for="gainRoulette">Gain Roulette (€)</label>
+      <input type="number" id="gainRoulette" min="0" placeholder="ex: 50000"><br><br>
+
+      <button onclick="saveProbabilites()">Enregistrer</button>
     </div>
   </div>
 </body>
